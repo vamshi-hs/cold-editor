@@ -1,0 +1,1 @@
+This is a editor written to replace emacs in terms of customization and advanced features with modern look and feel with *multi-threading*.
