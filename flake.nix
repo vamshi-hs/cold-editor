@@ -10,7 +10,7 @@
         name = "kilo-c";
         src = self;
         # buildPhase = "ls";
-        buildInputs = [pkgs.gcc];
+        buildInputs = [pkgs.gcc pkgs.mle];
         nativeBuildInputs = [pkgs.pkg-config];
         buildPhase = ''
                    gcc -Wall -Wextra -std=c99 -pedantic -ggdb -o kilo-c ./src/main.c
