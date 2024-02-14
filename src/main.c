@@ -308,6 +308,19 @@ void editorAppendRow(char *s, size_t len) {
   E.numrows++;
 }
 
+void editorFreeRow(erow *row){
+    free(row->render);
+    free(row->chars);
+}
+
+void editorDelRow(int at){
+    if (at < 0 || at >= E.numrows) return;
+    editorFreeRow(&E.row[at]);
+    memmove(&E.row[at],&E.row[at + 1], sizeof(erow) * (E.numrows - at - 1));
+    E.numrows--;
+    E.dirty++;
+}
+
 void editorRowInsertChar(erow *row,int at,int c){
   if (at < 0 || at > row -> size) at = row -> size;
   row -> chars = realloc(row -> chars,row->size+2);
@@ -317,6 +330,14 @@ void editorRowInsertChar(erow *row,int at,int c){
   editorUpdateRow(row);
 }
 
+void editorRowDelChar(erow *row,int at){
+    if(at < 0 || at >= row->size) return;
+    memmove(&row->chars[at],&row->chars[at+1],row->size-at);
+    row->size--;
+    editorUpdateRow(row);
+    E.dirty++;
+}
+
 /*** editor operations ***/
 void editorInsertChar(int c){
   if (E.cy == E.numrows) {
@@ -324,6 +345,17 @@ void editorInsertChar(int c){
   }
   editorRowInsertChar(&E.row[E.cy],E.cx,c);
   E.cx++;
+}
+
+void editorDelChar(){
+    if (E.cy == E.numrows) return;
+
+    erow *row = &E.row[E.cy];
+    if (E.cx > 0){
+        editorRowDelChar(row,E.cx-1);
+        E.cx--;
+    }
+    return;
 }
 
 void abAppend(struct abuf *ab, const char *s, int len){
@@ -528,6 +560,8 @@ void editorProcessKeypress() {
   case BACKSPACE:
   case CTRL_KEY('h'):
   case DEL_KEY:
+    if (c == DEL_KEY) editorMoveCursor(ARROW_RIGHT);
+    editorDelChar();
     break;
   case PAGE_UP:
   case PAGE_DOWN:
