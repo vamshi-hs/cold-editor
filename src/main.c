@@ -431,7 +431,7 @@ void editorInsertNewline(){
 void editorDelChar() {
   if (E.cy == E.numrows)
     return;
-  if (E.cy == 0 && E.cy == 0)
+  if (E.cx == 0 && E.cy == 0)
     return;
 
   erow *row = &E.row[E.cy];
@@ -754,7 +754,7 @@ int main(int argc, char *argv[]) {
   }
 
   editorSetStatusMessage("HELP: Ctrl-Q = quit");
-
+  E.dirty = 0;
   while (1) {
     editorRefreshScreen();
     editorProcessKeypress();

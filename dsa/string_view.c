@@ -36,7 +36,7 @@ void sv_insert_sv_at_index(struct SV* view1,struct SV* view2,int index){
 
 int main(){
   struct SV new_view = sv_new("Vamshi krishna");
-  sv_insert_sv_at_index(&new_view,&new_view,6);
+  sv_insert_sv_at_index(&new_view,&new_view,66);
   printf("%s",sv_to_string(new_view));
   char *s = "emacs";
   free(new_view.chars);
