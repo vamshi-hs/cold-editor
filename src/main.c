@@ -3,7 +3,7 @@
 #define _DEFAULT_SOURCE
 #define _BSD_SOURCE
 #define _GNU_SOURCE
-
+// this is written using cold-cs
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -16,6 +16,7 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#include <limits.h>
 
 /*** defines ***/
 
@@ -289,21 +290,26 @@ void editorSave() {
           return;
       }
   }
+
   int len;
   char *buf = editorRowsToString(&len);
-
   int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
+  if (fd == -1){
+      die("emacs");
+  }
+
   if (fd != -1) {
     if (ftruncate(fd, len) != -1) {
       if (write(fd, buf, len) == len) {
         close(fd);
         free(buf);
-        editorSetStatusMessage("%d bytes written to disk(but why)", len);
+	        editorSetStatusMessage("%d bytes written to disk(but why)", len);
         return;
       }
     }
     close(fd);
-  }
+  }	
+  
   free(buf);
   editorSetStatusMessage("Can't save! I/O error: %s", strerror(errno));
 }
@@ -326,12 +332,6 @@ void editorOpen(char *filename) {
            (line[linelen - 1] == '\n' || line[linelen - 1] == '\r'))
       linelen--;
     editorInsertRow(E.numrows,line,linelen);
-    //editorAppendRow(line, linelen);
-    /* E.row.size = linelen; */
-    /* E.row.chars = malloc(linelen + 1); */
-    /* memcpy(E.row.chars, line,linelen); */
-    /* E.row.chars[linelen] = '\0'; */
-    /* E.numrows = 1; */
   }
   free(line);
   fclose(fp);
@@ -451,7 +451,6 @@ void editorDelChar() {
 void abAppend(struct abuf *ab, const char *s, int len) {
 
   char *new = realloc(ab->b, ab->len + len);
-
   if (new == NULL)
     return;
   memcpy(&new[ab->len], s, len);
@@ -485,15 +484,19 @@ char *editorPrompt(char *prompt){
         } else if (c == '\r'){
             if (buflen != 0) {
                 editorSetStatusMessage("");
-                return *buf;
-            } else if (!iscntrl(c) && c < 128) {
+                return buf;
+            }
+	}else if (!iscntrl(c) && c < 128) {
+	      /* write(STDOUT_FILENO, "\x1b[2J", 4); */
+	      /* write(STDOUT_FILENO, "\x1b[H", 3); */
+	      /* exit(0); */
+
                 if (buflen == bufsize - 1){
                     bufsize *= 2;
                     buf = realloc(buf,bufsize);
                 }
                 buf[buflen++] = c;
                 buf[buflen] = '\0';
-            }
         }
     }
 }
@@ -680,6 +683,10 @@ void editorProcessKeypress() {
   case CTRL_KEY('s'):
     E.dirty = 0;
     editorSave();
+    	      /* write(STDOUT_FILENO, "\x1b[2J", 4); */
+	      /* write(STDOUT_FILENO, "\x1b[H", 3); */
+	      /* exit(0); */
+
     break;
 
   case HOME_KEY:
